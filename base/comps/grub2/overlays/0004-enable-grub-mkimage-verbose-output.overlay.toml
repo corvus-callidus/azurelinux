@@ -1,0 +1,12 @@
+# Log every module read by grub-mkimage so build logs capture the exact
+# dependency-expanded module set embedded in each EFI image.
+[metadata]
+category = "azl-release-management"
+upstream-status = "upstreamable"
+
+[[overlays]]
+description = "Enable verbose grub-mkimage output for EFI image builds"
+type = "file-search-replace"
+file = "grub.macros"
+regex = '%\{4\}\./grub-mkimage -O'
+replacement = '%{4}./grub-mkimage --verbose -O'
