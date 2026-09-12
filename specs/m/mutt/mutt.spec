@@ -5,7 +5,7 @@
 %bcond_without imap
 %bcond_without pop
 %bcond_without smtp
-%bcond_without gnutls
+%bcond_with gnutls
 %bcond_without gss
 %bcond_without sasl
 %bcond_with idn
@@ -23,7 +23,7 @@
 Summary: A text mode mail user agent
 Name: mutt
 Version: 2.3.0
-Release: 4%{?dist}
+Release: 5%{?dist}
 Epoch: 5
 # The entire source code is GPLv2+ except
 # pgpewrap.c setenv.c sha1.c wcwidth.c which are Public Domain
@@ -61,6 +61,7 @@ BuildRequires: lynx
 
 %if %{with imap} || %{with pop} || %{with smtp}
 %{?with_gnutls:BuildRequires: gnutls-devel}
+%{!?with_gnutls:BuildRequires: openssl-devel}
 %{?with_sasl:BuildRequires: cyrus-sasl-devel}
 %endif
 
@@ -73,6 +74,7 @@ BuildRequires: lynx
 %{?with_gpgme:BuildRequires: gpgme-devel}
 
 
+Patch14: 0001-preserve-system-openssl-policy.patch
 %description
 Mutt is a small but very powerful text-based MIME mail client.  Mutt
 is highly configurable, and is well suited to the mail power user with
@@ -96,6 +98,7 @@ autoreconf -fiv
 %patch -P8 -p1 -b .system_certs
 %patch -P9 -p1 -b .ssl_ciphers
 %patch -P13 -p1 -b .optusegpgagent
+%patch -P14 -p1 -b .openssl-policy
 
 sed -i -r 's/`$GPGME_CONFIG --libs`/"\0 -lgpg-error"/' configure
 
@@ -107,10 +110,11 @@ if echo %{release} | grep -E -q '%{hgreldate}'; then
   echo %{release} | sed -r 's/.*%{hgreldate}.*/"\1-\2-\3";/' >> reldate.h
 fi
 
-# remove mutt_ssl.c to be sure it won't be used because it violates
+# Retain only the selected TLS backend after applying system crypto policy fixes.
 # Packaging:CryptoPolicies
 # https://fedoraproject.org/wiki/Packaging:CryptoPolicies
-rm -f mutt_ssl.c
+%{?with_gnutls:rm -f mutt_ssl.c}
+%{!?with_gnutls:rm -f mutt_ssl_gnutls.c}
 
 
 %build
@@ -131,6 +135,7 @@ rm -f mutt_ssl.c
 \
     %if %{with imap} || %{with pop} || %{with smtp}
     %{?with_gnutls:	--with-gnutls} \
+    %{!?with_gnutls:	--with-ssl} \
     %{?with_sasl:	--with-sasl} \
     %endif
 \

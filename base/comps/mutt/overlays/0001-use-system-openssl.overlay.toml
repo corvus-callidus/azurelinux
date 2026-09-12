@@ -1,0 +1,50 @@
+# Route Mutt's TLS operations through Azure Linux's system OpenSSL provider
+# stack while preserving the system cipher and protocol policy defaults.
+[metadata]
+category = "azl-security-compliance"
+upstream-status = "upstreamable"
+
+[[overlays]]
+description = "Preserve OpenSSL system cipher and protocol policy defaults"
+type = "patch-add"
+source = "../0001-preserve-system-openssl-policy.patch"
+
+[[overlays]]
+description = "Apply the OpenSSL policy patch after the existing downstream patches"
+type = "spec-search-replace"
+section = "%prep"
+regex = '^%patch -P13 -p1 -b \.optusegpgagent$'
+replacement = "%patch -P13 -p1 -b .optusegpgagent\n%patch -P14 -p1 -b .openssl-policy"
+
+[[overlays]]
+description = "Default the optional TLS backend bcond to OpenSSL"
+type = "spec-search-replace"
+regex = '^%bcond_without gnutls$'
+replacement = "%bcond_with gnutls"
+
+[[overlays]]
+description = "Select the matching TLS development dependency"
+type = "spec-search-replace"
+regex = '^\%\{\?with_gnutls:BuildRequires: gnutls-devel\}$'
+replacement = "%{?with_gnutls:BuildRequires: gnutls-devel}\n%{!?with_gnutls:BuildRequires: openssl-devel}"
+
+[[overlays]]
+description = "Explain why either TLS implementation can now remain in the source tree"
+type = "spec-search-replace"
+section = "%prep"
+regex = "^# remove mutt_ssl\\.c to be sure it won't be used because it violates$"
+replacement = "# Retain only the selected TLS backend after applying system crypto policy fixes."
+
+[[overlays]]
+description = "Retain only the selected TLS backend source"
+type = "spec-search-replace"
+section = "%prep"
+regex = '^rm -f mutt_ssl\.c$'
+replacement = "%{?with_gnutls:rm -f mutt_ssl.c}\n%{!?with_gnutls:rm -f mutt_ssl_gnutls.c}"
+
+[[overlays]]
+description = "Select OpenSSL when the GnuTLS bcond is disabled"
+type = "spec-search-replace"
+section = "%build"
+regex = '^    %\{\?with_gnutls:\s*--with-gnutls\} \\$'
+replacement = "    %{?with_gnutls:\t--with-gnutls} \\\n    %{!?with_gnutls:\t--with-ssl} \\"
