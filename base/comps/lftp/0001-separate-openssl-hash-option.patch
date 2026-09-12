@@ -1,0 +1,181 @@
+diff --git a/configure b/configure
+index 903e9de..e8636a5 100755
+--- a/configure
++++ b/configure
+@@ -664,7 +664,7 @@ gl_use_threads_default=
+ gl_use_winpthreads_default=no
+ gt_needs=
+ ac_func_c_list=
+-with_openssl_default='no'
++with_openssl_hashes_default='no'
+ LIB_CRYPTO=
+ gl_fnmatch_required=POSIX
+ gl_getopt_required=POSIX
+@@ -2967,6 +2967,7 @@ with_sysroot
+ enable_libtool_lock
+ enable_cross_guesses
+ with_linux_crypto
++with_openssl_hashes
+ with_openssl
+ with_included_regex
+ enable_ipv6
+@@ -3681,7 +3682,8 @@ Optional Packages:
+   --with-linux-crypto     use Linux kernel cryptographic API (if available)
+                           for the hash functions MD5, SHA-1, SHA-224, SHA-256,
+                           SHA-384, SHA-512 on files
+-  --with-openssl[=ARG]    use libcrypto hash routines for the hash functions
++  --with-openssl-hashes[=ARG]
++                          use libcrypto hash routines for the hash functions
+                           MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512.
+                           Valid ARGs are:
+                             'yes',
+@@ -50974,18 +50976,18 @@ printf "%s\n" "#define GNULIB_TEST_CLOSEDIR 1" >>confdefs.h
+ 
+ 
+ 
+-# Check whether --with-openssl was given.
+-if test ${with_openssl+y}
++# Check whether --with-openssl-hashes was given.
++if test ${with_openssl_hashes+y}
+ then :
+-  withval=$with_openssl;
++  withval=$with_openssl_hashes;
+ else $as_nop
+-  with_openssl=$with_openssl_default
++  with_openssl_hashes=$with_openssl_hashes_default
+ fi
+ 
+ 
+ 
+-  if test "x$with_openssl" != xno; then
+-    if test "x$with_openssl" = xauto-gpl-compat; then
++  if test "x$with_openssl_hashes" != xno; then
++    if test "x$with_openssl_hashes" = xauto-gpl-compat; then
+                         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether openssl is GPL compatible" >&5
+ printf %s "checking whether openssl is GPL compatible... " >&6; }
+ if test ${gl_cv_openssl_gpl_compat+y}
+@@ -51019,7 +51021,7 @@ fi
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gl_cv_openssl_gpl_compat" >&5
+ printf "%s\n" "$gl_cv_openssl_gpl_compat" >&6; }
+     fi
+-    if test "x$with_openssl" != xauto-gpl-compat ||
++    if test "x$with_openssl_hashes" != xauto-gpl-compat ||
+        test "x$gl_cv_openssl_gpl_compat" = xyes; then
+       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for MD5 in -lcrypto" >&5
+ printf %s "checking for MD5 in -lcrypto... " >&6; }
+@@ -51080,9 +51082,9 @@ fi
+     - On Debian and Debian-based systems: libssl-dev,
+     - On Red Hat distributions: openssl-devel.
+     - Other: https://repology.org/project/openssl/versions'
+-      if test "x$with_openssl" = xyes; then
++      if test "x$with_openssl_hashes" = xyes; then
+         as_fn_error $? "$message" "$LINENO" 5
+-      elif test "x$with_openssl" = xoptional; then
++      elif test "x$with_openssl_hashes" = xoptional; then
+         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: $message" >&5
+ printf "%s\n" "$as_me: WARNING: $message" >&2;}
+       fi
+@@ -51100,18 +51102,18 @@ printf "%s\n" "$as_me: WARNING: $message" >&2;}
+ 
+ 
+ 
+-# Check whether --with-openssl was given.
+-if test ${with_openssl+y}
++# Check whether --with-openssl-hashes was given.
++if test ${with_openssl_hashes+y}
+ then :
+-  withval=$with_openssl;
++  withval=$with_openssl_hashes;
+ else $as_nop
+-  with_openssl=$with_openssl_default
++  with_openssl_hashes=$with_openssl_hashes_default
+ fi
+ 
+ 
+ 
+-  if test "x$with_openssl" != xno; then
+-    if test "x$with_openssl" = xauto-gpl-compat; then
++  if test "x$with_openssl_hashes" != xno; then
++    if test "x$with_openssl_hashes" = xauto-gpl-compat; then
+                         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether openssl is GPL compatible" >&5
+ printf %s "checking whether openssl is GPL compatible... " >&6; }
+ if test ${gl_cv_openssl_gpl_compat+y}
+@@ -51145,7 +51147,7 @@ fi
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $gl_cv_openssl_gpl_compat" >&5
+ printf "%s\n" "$gl_cv_openssl_gpl_compat" >&6; }
+     fi
+-    if test "x$with_openssl" != xauto-gpl-compat ||
++    if test "x$with_openssl_hashes" != xauto-gpl-compat ||
+        test "x$gl_cv_openssl_gpl_compat" = xyes; then
+       { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SHA1 in -lcrypto" >&5
+ printf %s "checking for SHA1 in -lcrypto... " >&6; }
+@@ -51206,9 +51208,9 @@ fi
+     - On Debian and Debian-based systems: libssl-dev,
+     - On Red Hat distributions: openssl-devel.
+     - Other: https://repology.org/project/openssl/versions'
+-      if test "x$with_openssl" = xyes; then
++      if test "x$with_openssl_hashes" = xyes; then
+         as_fn_error $? "$message" "$LINENO" 5
+-      elif test "x$with_openssl" = xoptional; then
++      elif test "x$with_openssl_hashes" = xoptional; then
+         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: $message" >&5
+ printf "%s\n" "$as_me: WARNING: $message" >&2;}
+       fi
+diff --git a/m4/gl-openssl.m4 b/m4/gl-openssl.m4
+index 26f4861..b92735a 100644
+--- a/m4/gl-openssl.m4
++++ b/m4/gl-openssl.m4
+@@ -15,13 +15,14 @@ gl_SET_CRYPTO_CHECK_DEFAULT([no])
+ AC_DEFUN([gl_CRYPTO_CHECK],
+ [
+   dnl gnulib users set this before gl_INIT with gl_SET_CRYPTO_CHECK_DEFAULT()
+-  m4_divert_once([DEFAULTS], [with_openssl_default='gl_CRYPTO_CHECK_DEFAULT'])
++  m4_divert_once([DEFAULTS], [with_openssl_hashes_default='gl_CRYPTO_CHECK_DEFAULT'])
+ 
+   dnl Only clear once, so crypto routines can be checked for individually
+   m4_divert_once([DEFAULTS], [LIB_CRYPTO=])
+ 
+-  AC_ARG_WITH([openssl],
+-    [[  --with-openssl[=ARG]    use libcrypto hash routines for the hash functions
++  AC_ARG_WITH([openssl-hashes],
++    [[  --with-openssl-hashes[=ARG]
++                          use libcrypto hash routines for the hash functions
+                           MD5, SHA-1, SHA-224, SHA-256, SHA-384, SHA-512.
+                           Valid ARGs are:
+                             'yes',
+@@ -36,11 +37,11 @@ AC_DEFUN([gl_CRYPTO_CHECK],
+                           use of Linux kernel crypto routines (if available),
+                           which has precedence for files.])],
+     [],
+-    [with_openssl=$with_openssl_default])
++    [with_openssl_hashes=$with_openssl_hashes_default])
+ 
+   AC_SUBST([LIB_CRYPTO])
+-  if test "x$with_openssl" != xno; then
+-    if test "x$with_openssl" = xauto-gpl-compat; then
++  if test "x$with_openssl_hashes" != xno; then
++    if test "x$with_openssl_hashes" = xauto-gpl-compat; then
+       dnl OpenSSL versions < 3 are under the OpenSSL license, which is not
+       dnl GPL compatible.
+       dnl See <https://www.gnu.org/licenses/license-list.en.html#OpenSSL>.
+@@ -56,7 +57,7 @@ AC_DEFUN([gl_CRYPTO_CHECK],
+            [gl_cv_openssl_gpl_compat=yes],
+            [gl_cv_openssl_gpl_compat=no])])
+     fi
+-    if test "x$with_openssl" != xauto-gpl-compat ||
++    if test "x$with_openssl_hashes" != xauto-gpl-compat ||
+        test "x$gl_cv_openssl_gpl_compat" = xyes; then
+       AC_CHECK_LIB([crypto], [$1],
+         [AC_CHECK_HEADERS(
+@@ -71,9 +72,9 @@ AC_DEFUN([gl_CRYPTO_CHECK],
+     - On Debian and Debian-based systems: libssl-dev,
+     - On Red Hat distributions: openssl-devel.
+     - Other: https://repology.org/project/openssl/versions'
+-      if test "x$with_openssl" = xyes; then
++      if test "x$with_openssl_hashes" = xyes; then
+         AC_MSG_ERROR([$message])
+-      elif test "x$with_openssl" = xoptional; then
++      elif test "x$with_openssl_hashes" = xoptional; then
+         AC_MSG_WARN([$message])
+       fi
+     fi

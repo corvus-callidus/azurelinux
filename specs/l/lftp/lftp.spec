@@ -4,11 +4,11 @@
 Summary:	A sophisticated file transfer program
 Name:		lftp
 Version:	4.9.3
-Release: 8%{?dist}
+Release: 9%{?dist}
 License:	GPL-3.0-or-later
 Source0:	http://lftp.yar.ru/ftp/%{name}-%{version}.tar.xz
 URL:		http://lftp.yar.ru/
-BuildRequires:	ncurses-devel, gnutls-devel, perl-generators, pkgconfig, readline-devel, gettext
+BuildRequires:	ncurses-devel, openssl-devel, perl-generators, pkgconfig, readline-devel, gettext
 BuildRequires:	zlib-devel, gcc-c++
 BuildRequires: desktop-file-utils
 BuildRequires: make
@@ -18,6 +18,7 @@ Patch2:  lftp-4.9.2-cdefs.patch
 Patch3:  lftp-4.9.2-tls-close.patch
 Patch4:  lftp-4.9.3-cert-pem-location.patch
 
+Patch5: 0001-separate-openssl-hash-option.patch
 %description
 LFTP is a sophisticated ftp/http file transfer program. Like bash, it has job
 control and uses the readline library for input. It has bookmarks, built-in
@@ -41,9 +42,10 @@ Utility scripts for use with lftp.
 %endif
 %patch -P3 -p1 -b .tls-close
 %patch -P4 -p1 -b .cert-pem
+%patch -P5 -p1 -b .openssl-options
 
 # Avoid trying to re-run autoconf
-touch -r aclocal.m4 configure m4/needtrio.m4
+touch -r aclocal.m4 configure m4/gl-openssl.m4 m4/needtrio.m4
 
 #sed -i.rpath -e '/lftp_cv_openssl/s|-R.*lib||' configure
 sed -i.norpath -e \
@@ -51,7 +53,7 @@ sed -i.norpath -e \
 	configure
 
 %build
-%configure --with-modules --disable-static --with-gnutls --without-openssl --with-debug
+%configure --with-modules --disable-static --without-gnutls --with-openssl --without-openssl-hashes --with-debug
 make %{?_smp_mflags}
 
 %install

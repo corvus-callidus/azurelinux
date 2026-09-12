@@ -1,0 +1,37 @@
+# Route LFTP's TLS operations through Azure Linux's system OpenSSL provider
+# stack instead of the independent GnuTLS and Nettle implementation path.
+[metadata]
+category = "azl-security-compliance"
+upstream-status = "upstreamable"
+
+[[overlays]]
+description = "Separate LFTP's OpenSSL TLS option from gnulib's optional libcrypto hash acceleration"
+type = "patch-add"
+source = "../0001-separate-openssl-hash-option.patch"
+
+[[overlays]]
+description = "Apply the OpenSSL option separation after the existing downstream patches"
+type = "spec-search-replace"
+section = "%prep"
+regex = '^%patch -P4 -p1 -b \.cert-pem$'
+replacement = "%patch -P4 -p1 -b .cert-pem\n%patch -P5 -p1 -b .openssl-options"
+
+[[overlays]]
+description = "Keep the patched gnulib macro older than generated Autoconf files"
+type = "spec-search-replace"
+section = "%prep"
+regex = '^touch -r aclocal\.m4 configure m4/needtrio\.m4$'
+replacement = "touch -r aclocal.m4 configure m4/gl-openssl.m4 m4/needtrio.m4"
+
+[[overlays]]
+description = "Replace the GnuTLS build dependency with OpenSSL"
+type = "spec-search-replace"
+regex = '^BuildRequires:\s*ncurses-devel, gnutls-devel, perl-generators, pkgconfig, readline-devel, gettext$'
+replacement = "BuildRequires:\tncurses-devel, openssl-devel, perl-generators, pkgconfig, readline-devel, gettext"
+
+[[overlays]]
+description = "Build the LFTP TLS backend against system OpenSSL without gnulib hash acceleration"
+type = "spec-search-replace"
+section = "%build"
+regex = '^%configure --with-modules --disable-static --with-gnutls --without-openssl --with-debug$'
+replacement = "%configure --with-modules --disable-static --without-gnutls --with-openssl --without-openssl-hashes --with-debug"
