@@ -18,7 +18,7 @@ Summary: CUPS printing system
 Name: cups
 Epoch: 1
 Version: 2.4.16
-Release: 9%{?dist}
+Release: 10%{?dist}
 # backend/failover.c - BSD-3-Clause
 # cups/md5* - Zlib
 # scheduler/colorman.c - Apache-2.0 WITH LLVM-exception AND BSD-2-Clause
@@ -38,7 +38,7 @@ Source2: macros.cups
 Source3: https://github.com/OpenPrinting/cups/releases/download/v%{VERSION}/cups-%{VERSION}-source.tar.gz.sig
 
 # cups-config from devel package conflicted on multilib arches,
-# fixed hack with pkg-config calling for gnutls' libdir variable
+# fixed hack with pkg-config calling for OpenSSL's libdir variable
 Patch1: cups-multilib.patch
 # if someone makes a change to banner files, then there will <banner>.rpmnew
 # with next update of cups-filters - this patch makes sure the banner file 
@@ -102,7 +102,7 @@ BuildRequires: pam-devel
 BuildRequires: pkgconf-pkg-config
 BuildRequires: pkgconfig(avahi-client)
 BuildRequires: pkgconfig(dbus-1)
-BuildRequires: pkgconfig(gnutls)
+BuildRequires: pkgconfig(openssl)
 BuildRequires: pkgconfig(libsystemd)
 BuildRequires: pkgconfig(libusb-1.0)
 # Make sure we get postscriptdriver tags.
@@ -164,6 +164,7 @@ Requires(preun): systemd
 Requires(postun): systemd
 
 
+Patch1001: 0001-use-system-openssl-policy.patch
 %package client
 Summary: CUPS printing system - client programs
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
@@ -176,7 +177,7 @@ Provides: lpr
 %package devel
 Summary: CUPS printing system - development environment
 Requires: %{name}-libs%{?_isa} = %{epoch}:%{version}-%{release}
-Requires: gnutls-devel
+Requires: openssl-devel
 Requires: krb5-devel
 Requires: pkgconf-pkg-config
 Requires: zlib-devel
@@ -305,6 +306,7 @@ to CUPS daemon. This solution will substitute printer drivers and raw queues in 
 
 # UPSTREAM PATCHES
 %patch -P 1000 -p1 -b .osh-use-after-free
+%patch -P 1001 -p1 -b .system-openssl
 
 
 # Log to the system journal by default (bug #1078781, bug #1519331).
@@ -346,7 +348,7 @@ export CXXFLAGS="$CXXFLAGS $RPM_OPT_FLAGS -DLDAP_DEPRECATED=1"
   --with-ondemand=systemd \
   --with-pkgconfpath=%{_libdir}/pkgconfig \
   --with-rundir=%{_rundir}/cups \
-  --with-tls=gnutls \
+  --with-tls=openssl \
   --with-xinetd=no \
 %if 0%{?rhel}
   --without-idle-exit-timeout \

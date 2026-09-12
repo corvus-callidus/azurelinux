@@ -1,0 +1,82 @@
+diff --git a/cups-config.in b/cups-config.in
+index b000b0f..eaeffd2 100644
+--- a/cups-config.in
++++ b/cups-config.in
+@@ -18,9 +18,9 @@ prefix=@prefix@
+ exec_prefix=@exec_prefix@
+ bindir=@bindir@
+ includedir=@includedir@
+-# Fetch libdir from gnutls's pkg-config script.  This is a bit
+-# of a cheat, but the cups-devel package requires gnutls-devel anyway.
+-libdir=`pkg-config --variable=libdir gnutls`
++# Fetch libdir from openssl's pkg-config script.  This is a bit
++# of a cheat, but the cups-devel package requires openssl-devel anyway.
++libdir=`pkg-config --variable=libdir openssl`
+ datarootdir=@datadir@
+ datadir=@datadir@
+ sysconfdir=@sysconfdir@
+diff --git a/cups/tls-openssl.c b/cups/tls-openssl.c
+index f746f4c..8998ac1 100644
+--- a/cups/tls-openssl.c
++++ b/cups/tls-openssl.c
+@@ -949,6 +949,8 @@ _httpTLSStart(http_t *http)		// I - Connection to server
+   SSL_CTX	*context;		// Encryption context
+   char		hostname[256],		// Hostname
+ 		cipherlist[256];	// List of cipher suites
++  int		max_version,		// Effective maximum TLS version
++		min_version;		// Effective minimum TLS version
+   unsigned long	error;			// Error code, if any
+   static const int versions[] =		// SSL/TLS versions
+   {
+@@ -1122,19 +1124,42 @@ _httpTLSStart(http_t *http)		// I - Connection to server
+   }
+ 
+   // Set TLS options...
+-  strlcpy(cipherlist, "HIGH:!DH:+DHE", sizeof(cipherlist));
+-  if ((tls_options & _HTTP_TLS_ALLOW_RC4) && http->mode == _HTTP_MODE_CLIENT)
+-    strlcat(cipherlist, ":+RC4", sizeof(cipherlist));
++  if (tls_options & _HTTP_TLS_NO_SYSTEM)
++  {
++    strlcpy(cipherlist, "HIGH:!DH:+DHE", sizeof(cipherlist));
++    if ((tls_options & _HTTP_TLS_ALLOW_RC4) && http->mode == _HTTP_MODE_CLIENT)
++      strlcat(cipherlist, ":+RC4", sizeof(cipherlist));
++    else
++      strlcat(cipherlist, ":!RC4", sizeof(cipherlist));
++    if (tls_options & _HTTP_TLS_DENY_CBC)
++      strlcat(cipherlist, ":!SHA1:!SHA256:!SHA384", sizeof(cipherlist));
++    strlcat(cipherlist, ":@STRENGTH", sizeof(cipherlist));
++  }
+   else
+-    strlcat(cipherlist, ":!RC4", sizeof(cipherlist));
+-  if (tls_options & _HTTP_TLS_DENY_CBC)
+-    strlcat(cipherlist, ":!SHA1:!SHA256:!SHA384", sizeof(cipherlist));
+-  strlcat(cipherlist, ":@STRENGTH", sizeof(cipherlist));
++  {
++    strlcpy(cipherlist, "PROFILE=SYSTEM", sizeof(cipherlist));
++    if (tls_options & _HTTP_TLS_DENY_CBC)
++      strlcat(cipherlist, ":!SHA1:!SHA256:!SHA384", sizeof(cipherlist));
++  }
++
++  min_version = versions[tls_min_version];
++  max_version = versions[tls_max_version];
++
++  if (!(tls_options & _HTTP_TLS_NO_SYSTEM))
++  {
++    int system_min_version = SSL_CTX_get_min_proto_version(context);
++    int system_max_version = SSL_CTX_get_max_proto_version(context);
++
++    if (system_min_version > min_version)
++      min_version = system_min_version;
++    if (system_max_version > 0 && system_max_version < max_version)
++      max_version = system_max_version;
++  }
+ 
+   DEBUG_printf(("4_httpTLSStart: cipherlist='%s', tls_min_version=%d, tls_max_version=%d", cipherlist, tls_min_version, tls_max_version));
+ 
+-  SSL_CTX_set_min_proto_version(context, versions[tls_min_version]);
+-  SSL_CTX_set_max_proto_version(context, versions[tls_max_version]);
++  SSL_CTX_set_min_proto_version(context, min_version);
++  SSL_CTX_set_max_proto_version(context, max_version);
+   SSL_CTX_set_cipher_list(context, cipherlist);
+ 
+   // Setup a TLS session

@@ -1,0 +1,44 @@
+# Route CUPS TLS through Azure Linux's system OpenSSL provider stack and
+# preserve the system cipher and protocol policy unless NoSystem is explicit.
+[metadata]
+category = "azl-security-compliance"
+upstream-status = "inapplicable"
+
+[[overlays]]
+description = "Use the Azure Linux system OpenSSL cipher and protocol policy"
+type = "patch-add"
+source = "../0001-use-system-openssl-policy.patch"
+
+[[overlays]]
+description = "Apply the OpenSSL policy patch after existing downstream patches"
+type = "spec-search-replace"
+section = "%prep"
+regex = '^%patch -P 1000 -p1 -b \.osh-use-after-free$'
+replacement = "%patch -P 1000 -p1 -b .osh-use-after-free\n%patch -P 1001 -p1 -b .system-openssl"
+
+[[overlays]]
+description = "Update the multilib rationale for the selected TLS backend"
+type = "spec-search-replace"
+regex = "^# fixed hack with pkg-config calling for gnutls' libdir variable$"
+replacement = "# fixed hack with pkg-config calling for OpenSSL's libdir variable"
+
+[[overlays]]
+description = "Build against system OpenSSL"
+type = "spec-search-replace"
+regex = '^BuildRequires: pkgconfig\(gnutls\)$'
+replacement = "BuildRequires: pkgconfig(openssl)"
+
+[[overlays]]
+description = "Require the selected TLS development package from cups-devel"
+type = "spec-search-replace"
+section = "%package"
+package = "devel"
+regex = '^Requires: gnutls-devel$'
+replacement = "Requires: openssl-devel"
+
+[[overlays]]
+description = "Select the OpenSSL TLS backend"
+type = "spec-search-replace"
+section = "%build"
+regex = '^  --with-tls=gnutls \\$'
+replacement = "  --with-tls=openssl \\"
