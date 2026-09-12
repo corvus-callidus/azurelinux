@@ -6,7 +6,7 @@
 Name: freetds
 Summary: Implementation of the TDS (Tabular DataStream) protocol
 Version: 1.4.23
-Release: 6%{?dist}
+Release: 7%{?dist}
 # Automatically converted from old format: LGPLv2+ and GPLv2+ - review is highly recommended.
 License: LGPL-2.0-or-later AND GPL-2.0-or-later
 URL: http://www.freetds.org/
@@ -14,8 +14,9 @@ URL: http://www.freetds.org/
 Source0: https://www.freetds.org/files/stable/%{name}-%{version}.tar.bz2
 Source1: freetds-tds_sysdep_public.h
 
-BuildRequires: unixODBC-devel, readline-devel, gnutls-devel, krb5-devel
-BuildRequires: libgcrypt-devel
+BuildRequires: unixODBC-devel, readline-devel, openssl-devel, krb5-devel
+# Technical OpenSSL migration; upstream still flags licensing compatibility.
+# Legal review is required before release.
 BuildRequires: libtool
 BuildRequires: doxygen, docbook-style-dsssl
 BuildRequires: make
@@ -23,6 +24,7 @@ BuildRequires: make
 Requires: %{name}-libs%{?_isa} = %{version}-%{release}
 
 
+Patch0: 0001-use-system-openssl-ciphers.patch
 %description 
 FreeTDS is a project to document and implement the TDS (Tabular
 DataStream) protocol. TDS is used by Sybase(TM) and Microsoft(TM) for
@@ -69,6 +71,7 @@ If you like to develop programs using %{name}, you will need to install
 sed -i '1 s,#!.*/perl,#!%{__perl},' samples/*.pl
 
 chmod -x samples/*.sh
+%patch -P 0 -p1 -b .system-openssl
 
 
 %build 
@@ -83,7 +86,8 @@ chmod -x samples/*.sh
 	--with-unixodbc="%{_prefix}" \
 	--enable-msdblib \
 	--enable-sybase-compat \
-	--with-gnutls \
+	--without-gnutls \
+	--with-openssl \
 	--enable-krb5
 
 #  disable-rpath in configure does not work...

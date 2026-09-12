@@ -1,0 +1,37 @@
+# Technical OpenSSL migration experiment. FreeTDS upstream still describes
+# OpenSSL as license-incompatible in m4/check_openssl.m4, so legal review
+# remains a release blocker even if build and runtime validation succeed.
+[metadata]
+category = "azl-security-compliance"
+upstream-status = "inapplicable"
+
+[[overlays]]
+description = "Default FreeTDS OpenSSL cipher selection to Azure Linux system policy"
+type = "patch-add"
+source = "../0001-use-system-openssl-ciphers.patch"
+
+[[overlays]]
+description = "Apply the system OpenSSL cipher patch"
+type = "spec-search-replace"
+section = "%prep"
+regex = '^chmod -x samples/\*\.sh$'
+replacement = "chmod -x samples/*.sh\n%patch -P 0 -p1 -b .system-openssl"
+
+[[overlays]]
+description = "Replace the GnuTLS build dependency with OpenSSL"
+type = "spec-search-replace"
+regex = '^BuildRequires: unixODBC-devel, readline-devel, gnutls-devel, krb5-devel$'
+replacement = "BuildRequires: unixODBC-devel, readline-devel, openssl-devel, krb5-devel"
+
+[[overlays]]
+description = "Remove the GnuTLS backend's direct libgcrypt build dependency"
+type = "spec-search-replace"
+regex = '^BuildRequires: libgcrypt-devel$'
+replacement = "# Technical OpenSSL migration; upstream still flags licensing compatibility.\n# Legal review is required before release."
+
+[[overlays]]
+description = "Select the OpenSSL TLS backend"
+type = "spec-search-replace"
+section = "%build"
+regex = '^\t--with-gnutls \\$'
+replacement = "\t--without-gnutls \\\n\t--with-openssl \\"
